@@ -1,0 +1,101 @@
+body {
+    background-color: #f8f9fa;
+    user-select: none;
+    /* Отключаем выделение текста на всей странице */
+}
+
+h1,
+p {
+    user-select: none;;
+    color: white;
+    /* Отключаем выделение текста для заголовка и параграфа */
+}
+
+.card-img-top{
+    border-radius: 5px;
+}
+
+#clicker-container {
+    width: 300px;
+    height: 300px;
+    background-image: url('./assets/coin.png');
+    /* Замените 'your-image-url.jpg' на путь к вашему изображению */
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    position: relative;
+    margin: auto;
+    user-select: none;
+    /* Отключаем выделение текста для контейнера */
+    transition: transform 0.1s ease;
+    /* Добавляем переход для анимации нажатия */
+    -webkit-user-drag: none;
+    /* Отключаем перетаскивание изображения */
+}
+
+#clicker-container:hover {
+    /* opacity: 0.8; */
+    /* Удаляем изменение прозрачности при наведении */
+}
+
+#clicker-container:active {
+    filter: brightness(0.9);
+    /* Темним изображение при клике */
+}
+
+.click-value {
+    position: absolute;
+    font-size: 24px;
+    color: rgb(255, 225, 0);
+    font-weight: bold;
+    animation: fadeOut 1s forwards;
+    pointer-events: none;
+    /* Отключаем события мыши для элементов с текстом */
+}
+
+.huge-counter {
+    font-size: 3em;
+    padding: 10px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    /* Добавляем отступ снизу */
+}
+
+#level-display {
+    font-family: 'Roboto', sans-serif;
+    /* Устанавливаем новый шрифт */
+}
+
+#clickCount {
+    color: yellow;
+    /* Цвет текста желтый */
+}
+
+/* Остальные ваши стили */
+
+
+
+.upgrade-btn {
+    width: 100%;
+}
+
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+}
+
+@media (max-width: 768px) {
+    #clicker-container {
+        width: 200px;
+        /* Изменяем размер контейнера на меньших экранах */
+        height: 200px;
+        /* Изменяем размер контейнера на меньших экранах */
+    }
+}
