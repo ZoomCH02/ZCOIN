@@ -1,3 +1,6 @@
+document.addEventListener('DOMContentLoaded', (event) => {
+    window.Telegram.WebApp.ready();
+})
 
 const clickerContainer = document.getElementById('clicker-container');
 const clickCountDisplay = document.getElementById('level-display');
@@ -5,6 +8,9 @@ const nameCity = document.getElementById('nameCity')
 
 var currentLvl = 1;
 var coldun = 0;
+
+Telegram.WebApp.ready();
+
 
 // Функция для обновления количества кликов
 function updateClickCount(clickCount) {
