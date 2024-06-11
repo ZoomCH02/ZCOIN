@@ -26,6 +26,12 @@ app.get('/', (req, res) => {
     res.send({ sessionId });
 });
 
+app.post('/updateClickCount', (req, res) => {
+    const { userId, clickCount } = req.body;
+
+    res.send('Данные обновлены успешно');
+});
+
 // Получение текущего количества кликов из базы данных для данной сессии
 app.get('/userInfo', (req, res) => {
     const sessionId = req.sessionID;
