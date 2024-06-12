@@ -26,11 +26,22 @@ app.get('/', (req, res) => {
     res.send({ sessionId });
 });
 
-app.post('/', (req, res) => {
-    const { userId, clickCount } = req.body;
+// app.post('/', (req, res) => {
+//     const { userId, clickCount } = req.body;
 
-    res.send('Данные обновлены успешно');
-});
+//     const sessionId = req.sessionID;
+//     db.get('SELECT * FROM Sessions s, Levels l WHERE s.session_id = ? AND l.id = s.level', [sessionId], (err, row) => {
+//         if (err) { 
+//             console.error('Ошибка при запросе к базе данных:', err.message);
+//             res.status(500).send('Ошибка при запросе к базе данных');
+//         } else {
+//             const clickCount = row ? row.click_count : 0;
+//             res.send({ clickCount, row });
+//         }
+//     });
+
+//     res.send('Данные обновлены успешно: '+row);
+// });
 
 // Получение текущего количества кликов из базы данных для данной сессии
 app.get('/userInfo', (req, res) => {
