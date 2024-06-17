@@ -1,125 +1,152 @@
-const express = require('express');
-const session = require('express-session');
-const sqlite3 = require('sqlite3').verbose();
-const bodyParser = require('body-parser');
+const express = require("express");
+const session = require("express-session");
+const sqlite3 = require("sqlite3").verbose();
+const bodyParser = require("body-parser");
+var jwt = require('jsonwebtoken');
+const JWTSECRET = 'afw4tds'
 
 const app = express();
 const port = 3000;
 
-// Используем bodyParser для обработки JSON-запросов
 app.use(bodyParser.json());
+app.use(express.static("public"));
 
-app.use(express.static('public'));
+app.use(
+    session({
+        secret: "your-secret-key",
+        resave: false,
+        saveUninitialized: true,
+    }),
+);
 
-// Инициализация сессий
-app.use(session({
-    secret: 'your-secret-key', // Секретный ключ для подписи сессии, используйте свой уникальный ключ
-    resave: false,
-    saveUninitialized: true
-}));
+const db = new sqlite3.Database("./db.db", (err) => {});
 
-// Инициализация базы данных SQLite
-const db = new sqlite3.Database('./db.db', (err) => { });
-
-app.get('/', (req, res) => {
-    const sessionId = req.sessionID;
-    res.send({ sessionId });
+app.post("/", (req, res) => {
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).send("userId is required");
+    }
+    res.send({ userId });
 });
 
-// app.post('/', (req, res) => {
-//     const { userId, clickCount } = req.body;
+app.get("/userInfo", (req, res) => {
+    var decoded = {}
+    try {
+       decoded = jwt.verify(req.query.user, JWTSECRET);
+    } catch(err) {
+      res.send('no')
+      return;
+    }
+    
+    if(!decoded.userId){
+        res.send('no2')
+        return;
+    }
 
-//     const sessionId = req.sessionID;
-//     db.get('SELECT * FROM Sessions s, Levels l WHERE s.session_id = ? AND l.id = s.level', [sessionId], (err, row) => {
-//         if (err) { 
-//             console.error('Ошибка при запросе к базе данных:', err.message);
-//             res.status(500).send('Ошибка при запросе к базе данных');
-//         } else {
-//             const clickCount = row ? row.click_count : 0;
-//             res.send({ clickCount, row });
-//         }
-//     });
+    const userId = decoded.userId
+    req.session.userId = userId;
 
-//     res.send('Данные обновлены успешно: '+row);
-// });
+    db.get(
+        "SELECT * FROM Sessions s, Levels l WHERE s.user_id = ? AND l.id = s.level",
+        [userId],
+        (err, row) => {
+            if (err) {
+                console.error("Ошибка при запросе к базе данных:", err.message);
+                res.status(500).send("Ошибка при запросе к базе данных");
+            } else {
+                const clickCount = row ? row.click_count : 0;
+                res.send({ clickCount, row });
+            }
+        },
+    );
+});
 
-// Получение текущего количества кликов из базы данных для данной сессии
-app.get('/userInfo', (req, res) => {
-    const sessionId = req.sessionID;
-    db.get('SELECT * FROM Sessions s, Levels l WHERE s.session_id = ? AND l.id = s.level', [sessionId], (err, row) => {
+app.get("/cards", (req, res) => {
+    db.all("SELECT * FROM Cards", (err, rows) => {
         if (err) {
-            console.error('Ошибка при запросе к базе данных:', err.message);
-            res.status(500).send('Ошибка при запросе к базе данных');
+            console.error("Ошибка при запросе к базе данных:", err.message);
+            res.status(500).send("Ошибка при запросе к базе данных");
         } else {
-            const clickCount = row ? row.click_count : 0;
-            res.send({ clickCount, row });
+            res.send({ rows });
         }
     });
 });
 
-//Получение карточек
-app.get('/cards', (req, res) => {
-    db.all('SELECT * FROM Cards', (err, row) => {
-        if (err) {
-            console.error('Ошибка при запросе к базе данных:', err.message);
-            res.status(500).send('Ошибка при запросе к базе данных');
-        } else {
-            res.send({ row });
-        }
-    });
-});
-
-app.post('/updateLevel', (req, res) => {
-    const sessionId = req.sessionID;
+app.post("/updateLevel", (req, res) => {
+    const userId = req.session.userId;
     const level = req.body.lvl;
-
-    db.run('UPDATE Sessions SET level = ? WHERE session_id = ?', [level, sessionId], (err) => {
-        if (err) {
-            console.error('Ошибка при обновлении базы данных:', err.message);
-            res.status(500).send('Ошибка при обновлении базы данных');
-        } else {
-            res.send('Клик успешно обновлен');
-        }
-    });
-
+    if (!userId) {
+        return res.status(400).send("userId is required");
+    }
+    db.run(
+        "UPDATE Sessions SET level = ? WHERE user_id = ?",
+        [level, userId],
+        (err) => {
+            if (err) {
+                console.error(
+                    "Ошибка при обновлении базы данных:",
+                    err.message,
+                );
+                res.status(500).send("Ошибка при обновлении базы данных");
+            } else {
+                res.send("Уровень успешно обновлен");
+            }
+        },
+    );
 });
 
-// Увеличение количества кликов для данной сессии и обновление в базе данных
-app.post('/click', (req, res) => {
-    const sessionId = req.sessionID;
+app.post("/click", (req, res) => {
+    const userId = req.session.userId;
     const clickCount = req.body.clickCount;
-
-    db.get('SELECT * FROM Sessions WHERE session_id = ?', [sessionId], (err, row) => {
+    if (!userId) {
+        return res.status(400).send("userId is required");
+    }
+    db.get("SELECT * FROM Sessions WHERE user_id = ?", [userId], (err, row) => {
         if (err) {
-            console.error('Ошибка при запросе к базе данных:', err.message);
-            res.status(500).send('Ошибка при запросе к базе данных');
+            console.error("Ошибка при запросе к базе данных:", err.message);
+            res.status(500).send("Ошибка при запросе к базе данных");
         } else {
             if (row) {
-                // Обновляем существующую запись
-                db.run('UPDATE Sessions SET click_count = ? WHERE session_id = ?', [clickCount, sessionId], (err) => {
-                    if (err) {
-                        console.error('Ошибка при обновлении базы данных:', err.message);
-                        res.status(500).send('Ошибка при обновлении базы данных');
-                    } else {
-                        res.send('Клик успешно обновлен');
-                    }
-                });
+                db.run(
+                    "UPDATE Sessions SET click_count = ? WHERE user_id = ?",
+                    [clickCount, userId],
+                    (err) => {
+                        if (err) {
+                            console.error(
+                                "Ошибка при обновлении базы данных:",
+                                err.message,
+                            );
+                            res.status(500).send(
+                                "Ошибка при обновлении базы данных",
+                            );
+                        } else {
+                            res.send("Клик успешно обновлен");
+                        }
+                    },
+                );
             } else {
-                // Создаем новую запись
-                db.run('INSERT INTO Sessions (session_id, click_count, level, clickPrice) VALUES (?, ?, ?, ?)', [sessionId, clickCount, 1, 1], (err) => {
-                    if (err) {
-                        console.error('Ошибка при записи в базу данных:', err.message);
-                        res.status(500).send('Ошибка при записи в базу данных');
-                    } else {
-                        res.send('Клик успешно зарегистрирован');
-                    }
-                });
+                db.run(
+                    "INSERT INTO Sessions (user_id, click_count, level, clickPrice) VALUES (?, ?, ?, ?)",
+                    [userId, clickCount, 1, 1],
+                    (err) => {
+                        if (err) {
+                            console.error(
+                                "Ошибка при записи в базу данных:",
+                                err.message,
+                            );
+                            res.status(500).send(
+                                "Ошибка при записи в базу данных",
+                            );
+                        } else {
+                            res.send("Клик успешно зарегистрирован");
+                        }
+                    },
+                );
             }
         }
     });
 });
 
-// Запуск сервера
 app.listen(port, () => {
     console.log(`Сервер запущен на порту ${port}`);
 });

@@ -1,76 +1,94 @@
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener("DOMContentLoaded", (event) => {
     window.Telegram.WebApp.ready();
-})
+});
 
-const clickerContainer = document.getElementById('clicker-container');
-const clickCountDisplay = document.getElementById('level-display');
-const nameCity = document.getElementById('nameCity')
+const clickerContainer = document.getElementById("clicker-container");
+const clickCountDisplay = document.getElementById("level-display");
+const nameCity = document.getElementById("nameCity");
 
 var currentLvl = 1;
 var coldun = 0;
 
 Telegram.WebApp.ready();
 
+function getParameterByName(name, url = window.location.href) {
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+var user = getParameterByName("user");
 
 // Функция для обновления количества кликов
 function updateClickCount(clickCount) {
-    fetch('/click', {
-        method: 'POST',
+    fetch("/click", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
         },
-        body: JSON.stringify({ clickCount })
+        body: JSON.stringify({ clickCount }),
     })
-        .then(response => response.text())
-        .then(data => {
+        .then((response) => response.text())
+        .then((data) => {
             console.log(data);
             getClickCount();
         })
-        .catch(error => console.error('Ошибка при обновлении количества кликов:', error));
+        .catch((error) =>
+            console.error("Ошибка при обновлении количества кликов:", error),
+        );
 }
 
 function updateLevel(lvl) {
-    fetch('/updateLevel', {
-        method: 'POST',
+    fetch("/updateLevel", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
         },
-        body: JSON.stringify({ lvl })
+        body: JSON.stringify({ lvl }),
     })
-        .then(response => response.text())
-        .then(data => {
+        .then((response) => response.text())
+        .then((data) => {
             console.log(data);
             getClickCount();
         })
-        .catch(error => console.error('Ошибка при обновлении количества кликов:', error));
+        .catch((error) =>
+            console.error("Ошибка при обновлении количества кликов:", error),
+        );
 }
 
 function getClickCount() {
-    fetch('/userInfo')
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
+    fetch("/userInfo?user=" + user)
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
             clickCountDisplay.textContent = data.clickCount;
             if (data.row) {
-                nameCity.textContent = data.row.name
-                var backgroundimg = document.getElementById('backgroundimg')
-                backgroundimg.setAttribute('style', `background-image: url("${data.row.img}"); border-radius: 50px;`)
+                nameCity.textContent = data.row.name;
+                var backgroundimg = document.getElementById("backgroundimg");
+                backgroundimg.setAttribute(
+                    "style",
+                    `background-image: url("${data.row.img}"); border-radius: 50px;`,
+                );
                 currentLvl = data.row.level;
-            }
-            else {
-                nameCity.textContent = 'Белгород';
+            } else {
+                nameCity.textContent = "Белгород";
                 currentLvl = 1;
             }
         })
-        .catch(error => console.error('Ошибка при получении количества кликов:', error));
+        .catch((error) =>
+            console.error("Ошибка при получении количества кликов:", error),
+        );
 }
 
 // Отключаем контекстное меню для контейнера
-clickerContainer.addEventListener('contextmenu', (event) => {
+clickerContainer.addEventListener("contextmenu", (event) => {
     event.preventDefault();
 });
 
-clickerContainer.addEventListener('click', (event) => {
+clickerContainer.addEventListener("click", (event) => {
     coldun++;
 
     let clickCount = parseInt(clickCountDisplay.textContent) + 1;
@@ -84,58 +102,47 @@ clickerContainer.addEventListener('click', (event) => {
         //Белгород
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 1000 && currentLvl == 2) {
+    } else if (clickCount >= 1000 && currentLvl == 2) {
         //Луганск
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 5000 && currentLvl == 3) {
+    } else if (clickCount >= 5000 && currentLvl == 3) {
         //Донецк
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 50000 && currentLvl == 4) {
+    } else if (clickCount >= 50000 && currentLvl == 4) {
         //Мариупль
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 100000 && currentLvl == 5) {
+    } else if (clickCount >= 100000 && currentLvl == 5) {
         //Харьков
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 500000 && currentLvl == 6) {
+    } else if (clickCount >= 500000 && currentLvl == 6) {
         //Одесса
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 1000000 && currentLvl == 7) {
+    } else if (clickCount >= 1000000 && currentLvl == 7) {
         //Киев
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 10000000 && currentLvl == 8) {
+    } else if (clickCount >= 10000000 && currentLvl == 8) {
         //Польша
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 100000000 && currentLvl == 9) {
+    } else if (clickCount >= 100000000 && currentLvl == 9) {
         //НАТО
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 10000000000 && currentLvl == 10) {
+    } else if (clickCount >= 10000000000 && currentLvl == 10) {
         //ЗЕМЛЯ
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 100000000000 && currentLvl == 11) {
+    } else if (clickCount >= 100000000000 && currentLvl == 11) {
         //СОЛНЕЧНАЯ СИСТЕМА
         currentLvl++;
         updateLevel(currentLvl);
-    }
-    else if (clickCount >= 10000000000000 && currentLvl == 12) {
+    } else if (clickCount >= 10000000000000 && currentLvl == 12) {
         //МЛЕЧНЫЙ ПУТЬ
         currentLvl++;
         updateLevel(currentLvl);
@@ -154,16 +161,17 @@ clickerContainer.addEventListener('click', (event) => {
     clickerContainer.style.transform = `translate(${moveX}px, ${moveY}px) scale(0.95)`;
 
     setTimeout(() => {
-        clickerContainer.style.transform = 'translate(0, 0) scale(1)';
+        clickerContainer.style.transform = "translate(0, 0) scale(1)";
     }, 100);
 
     // Создаем элемент для отображения значения клика
-    const clickValue = document.createElement('div');
-    clickValue.className = 'click-value';
-    clickValue.textContent = '+1';
-    clickValue.style.left = `${offsetX}px`;
-    clickValue.style.top = `${offsetY}px`;
-
+    const clickValue = document.createElement("div");
+    const textCounter = document.createElement("h3");
+    textCounter.className = "click-value";
+    textCounter.textContent = "+1";
+    textCounter.style.left = `${offsetX}px`;
+    textCounter.style.top = `${offsetY - 50}px`;
+    clickValue.appendChild(textCounter);
     clickerContainer.appendChild(clickValue);
 
     // Удаляем элемент после завершения анимации
@@ -173,22 +181,24 @@ clickerContainer.addEventListener('click', (event) => {
 });
 
 // Получаем текущее количество кликов при загрузке страницы
-getClickCount();
-getCards();
+setTimeout(function () {
+    getClickCount();
+    getCards();
+}, 1000); // 1000 миллисекунд = 1 секунда
 
 function getCards() {
-    var cardsPlace = document.getElementById('cards');
-    cardsPlace.innerHTML = `<h2>Загрузка...</h2>`
+    var cardsPlace = document.getElementById("cards");
+    cardsPlace.innerHTML = `<h2>Загрузка...</h2>`;
 
-    fetch('/cards')
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            const cardElement = document.createElement('div');
-            cardElement.className = 'card mb-4';
+    fetch("/cards")
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
+            const cardElement = document.createElement("div");
+            cardElement.className = "card mb-4";
             cardElement.style = "min-width: 18rem;"; // Минимальная ширина карточки
-            cardsPlace.innerHTML = ``
-            data.row.forEach(card => {
+            cardsPlace.innerHTML = ``;
+            data.rows.forEach((card) => {
                 cardsPlace.innerHTML += `
                     <div class="card">
                         <div class="card-body">
@@ -199,12 +209,13 @@ function getCards() {
                             <button class="btn btn-primary upgrade-btn">Прокачать</button>
                         </div>
                      </div>
-                    `
+                    `;
             });
             cardsPlace.appendChild(cardElement);
 
             console.log(data);
-
         })
-        .catch(error => console.error('Ошибка при получении карточек:', error));
+        .catch((error) =>
+            console.error("Ошибка при получении карточек:", error),
+        );
 }
